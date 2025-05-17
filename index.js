@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json({ extended: true }));
 
 // Rutas
-app.use('/users', require('./routes/users'));
+app.use('/api/v1/users', require('./routes/users'));
 
 // Puerto de la app
 const PORT = process.env.PORT || 4000;
