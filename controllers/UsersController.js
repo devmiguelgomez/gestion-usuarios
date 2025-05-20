@@ -95,3 +95,50 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ mensaje: 'Error al eliminar usuario' });
     }
 };
+
+// Obtener todos los usuarios
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json({
+      success: true,
+      data: users
+    });
+  } catch (error) {
+    console.error('Error al obtener los usuarios:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener los usuarios',
+      error: error.message
+    });
+  }
+};
+
+// Obtener un usuario por ID
+exports.getUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    if (!userId) {
+      return res.status(400).json({ message: 'ID de usuario requerido' });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    console.error('Error al obtener usuario por ID:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener el usuario',
+      error: error.message
+    });
+  }
+};
