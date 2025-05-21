@@ -11,5 +11,7 @@ router.put('/update/:id', usersController.updateUser);
 router.get('/get-all-users', usersController.getAllUsers);
 // Obtener usuario por ID
 router.get('/get-user-by-id/:id', usersController.getUserById);
+// Obtener actividades por ID de usuario
+router.get("/get-activities-user/:id", getActivitiesByUser);
 
 module.exports = router;

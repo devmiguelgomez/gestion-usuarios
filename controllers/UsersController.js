@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const axios = require("axios");
 
 //Controlador para obtener el plan de un usuario
 exports.getUserPlan = async (req, res) => {
@@ -43,7 +44,7 @@ exports.getUserPlan = async (req, res) => {
     });
   }
 };
-// Controlador para actualizar un usuario
+// Controlador para actualizar un usuario 
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -140,5 +141,44 @@ exports.getUserById = async (req, res) => {
       message: 'Error al obtener el usuario',
       error: error.message
     });
+  }
+};
+
+// Obtener las actividades a las que asistió el usuario
+exports.getActivitiesByUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // 1. Buscar el usuario en la base local
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    }
+
+    // 2. Obtener asistencias desde servicio externo
+    const asistenciaResponse = await axios.get(`http://attendance-service/api/attendances?user_id=${userId}`);
+    const asistencias = asistenciaResponse.data;
+
+    // Filtrar las asistencias que tienen "asistio: true"
+    const attendedActivities = asistencias.filter(a => a.asistio === true);
+
+    // 3. Obtener detalles de actividades desde servicio externo
+    const activityIds = attendedActivities.map(a => a.activity_id);
+    const activityDetailsPromises = activityIds.map(id =>
+      axios.get(`http://activity-service/api/activities/${id}`)
+    );
+
+    const activityDetailsResponses = await Promise.all(activityDetailsPromises);
+    const actividades = activityDetailsResponses.map(resp => resp.data);
+
+    // 4. Responder con la info combinada
+    res.status(200).json({
+      usuario: user,
+      actividades
+    });
+
+  } catch (error) {
+    console.error("Error al obtener actividades del usuario:", error.message);
+    res.status(500).json({ mensaje: "Error al obtener actividades del usuario" });
   }
 };
