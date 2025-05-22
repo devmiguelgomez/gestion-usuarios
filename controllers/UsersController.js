@@ -25,7 +25,7 @@ exports.getUserPlan = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        userName: user.name || user.username,
+        userName: user.nombre,
         planInfo: {
           plan_id: user.plan_id || null,
           fecha_plan_contratado: user.fecha_plan_contratado || null,
