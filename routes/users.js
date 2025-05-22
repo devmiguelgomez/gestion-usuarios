@@ -11,5 +11,7 @@ router.put('/update/:id', usersController.updateUser);
 router.get('/get-all-users', usersController.getAllUsers);
 // Obtener usuario por ID
 router.get('/get-user-by-id/:id', usersController.getUserById);
+//Ruta para asignar o cambiar el plan de un usuario
+router.put('/assign-plan/:id', usersController.assignPlanToUser);
 
 module.exports = router;

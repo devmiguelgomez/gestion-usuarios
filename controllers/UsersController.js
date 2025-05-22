@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Plan = require('../models/Plan');
 
 //Controlador para obtener el plan de un usuario
 exports.getUserPlan = async (req, res) => {
@@ -139,6 +140,47 @@ exports.getUserById = async (req, res) => {
       success: false,
       message: 'Error al obtener el usuario',
       error: error.message
+    });
+  }
+};
+
+// Asignar plan a usuario
+exports.assigPlanToUser = async (req, res) => {
+  const { id, plan_id } = req.params;
+
+  try {
+    const plan = await Plan.findById(plan_id);
+    if (!plan) {
+      return res.status(404).json({ message: 'El plan no existe' });
+    }
+
+    const fechaContratado = new Date();
+    const fechaCaducidad = new Date(fechaContratado);
+    fechaCaducidad.setDate(fechaContratado.getDate() + plan.duracion_dias);
+
+    const usuarioActualizado = await User.findByIdAndUpdate(
+      id,
+      {
+        plan_id: plan._id,
+        fecha_plan_contratado: fechaContratado,
+        fecha_caducidad_plan: fechaCaducidad
+      },
+      { new: true, runValidators: true }
+    ).populate('plan_id');
+
+    if (!usuarioActualizado) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    res.status(200).json({
+      success: true,
+      message: 'Plan asignado correctamente',
+      data: usuarioActualizado
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error al asignar el plan',
+      error: error.message,
     });
   }
 };
