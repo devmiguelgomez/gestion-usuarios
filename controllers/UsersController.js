@@ -145,7 +145,16 @@ exports.getUserById = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   try {
-    const datos = req.body;
+    // Asegurarse de que datos siempre sea un objeto, incluso si req.body es null
+    const datos = req.body && typeof req.body === 'object' ? req.body : {};
+
+    // Verificar que req.body no está vacío
+    if (Object.keys(datos).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'El cuerpo de la solicitud está vacío. Se requieren datos para crear el usuario.'
+      });
+    }
 
     // Validar campos obligatorios
     const camposObligatorios = ['nombre', 'apellido', 'dni', 'correo_electronico', 'fecha_nacimiento'];
@@ -187,7 +196,7 @@ exports.createUser = async (req, res) => {
       });
     }
 
-    // Calcular edad
+    // Calcular edad (aunque esto ya lo hace el middleware pre('save') del modelo)
     const fechaNacimiento = new Date(datos.fecha_nacimiento);
     const hoy = new Date();
 
@@ -198,20 +207,20 @@ exports.createUser = async (req, res) => {
       });
     }
 
-    let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
-    const mes = hoy.getMonth() - fechaNacimiento.getMonth();
-    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
-      edad--;
-    }
-
-    // Crear usuario
+    // Crear usuario (los campos como edad y antiguedad_meses serán calculados por el middleware)
     const nuevoUsuario = new User({
-      ...datos,
-      edad: edad,
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      dni: datos.dni,
+      correo_electronico: datos.correo_electronico,
+      fecha_nacimiento: datos.fecha_nacimiento,
+      telefono: datos.telefono || null,
+      enfermedades_base: datos.enfermedades_base || false,
+      profesion: datos.profesion || null,
       fecha_inscripcion: hoy,
-      antiguedad_meses: 0 // Esto puede calcularse más adelante si se desea,
-      ,
-      email: datos.correo_electronico,
+      plan_id: datos.plan_id || null,
+      fecha_plan_contratado: datos.fecha_plan_contratado || null,
+      fecha_caducidad_plan: datos.fecha_caducidad_plan || null
     });
 
     const usuarioGuardado = await nuevoUsuario.save();
