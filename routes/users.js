@@ -11,5 +11,8 @@ router.put('/update/:id', usersController.updateUser);
 router.get('/get-all-users', usersController.getAllUsers);
 // Obtener usuario por ID
 router.get('/get-user-by-id/:id', usersController.getUserById);
+// Crear nuevo usuario
+router.post('/create-user', usersController.createUser);
+
 
 module.exports = router;
