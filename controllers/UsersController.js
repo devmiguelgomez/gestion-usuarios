@@ -142,3 +142,92 @@ exports.getUserById = async (req, res) => {
     });
   }
 };
+
+exports.createUser = async (req, res) => {
+  try {
+    const datos = req.body;
+
+    // Validar campos obligatorios
+    const camposObligatorios = ['nombre', 'apellido', 'dni', 'correo_electronico', 'fecha_nacimiento'];
+    const camposFaltantes = camposObligatorios.filter(campo => !datos[campo]);
+
+    if (camposFaltantes.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Faltan campos obligatorios: ${camposFaltantes.join(', ')}`
+      });
+    }
+
+    // Validar formato del correo
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(datos.correo_electronico)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Formato de correo electrónico no válido.'
+      });
+    }
+
+    // Validar si el DNI y el correo ya existen
+    const [dniExistente, correoExistente] = await Promise.all([
+      User.findOne({ dni: datos.dni }),
+      User.findOne({ correo_electronico: datos.correo_electronico })
+    ]);
+
+    if (dniExistente) {
+      return res.status(409).json({
+        success: false,
+        message: 'Ya existe un usuario con ese DNI.'
+      });
+    }
+
+    if (correoExistente) {
+      return res.status(409).json({
+        success: false,
+        message: 'Ya existe un usuario con ese correo electrónico.'
+      });
+    }
+
+    // Calcular edad
+    const fechaNacimiento = new Date(datos.fecha_nacimiento);
+    const hoy = new Date();
+
+    if (isNaN(fechaNacimiento.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'La fecha de nacimiento no es válida.'
+      });
+    }
+
+    let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+    const mes = hoy.getMonth() - fechaNacimiento.getMonth();
+    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
+      edad--;
+    }
+
+    // Crear usuario
+    const nuevoUsuario = new User({
+      ...datos,
+      edad: edad,
+      fecha_inscripcion: hoy,
+      antiguedad_meses: 0 // Esto puede calcularse más adelante si se desea,
+      ,
+      email: datos.correo_electronico,
+    });
+
+    const usuarioGuardado = await nuevoUsuario.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Usuario creado con éxito.',
+      data: usuarioGuardado
+    });
+
+  } catch (error) {
+    console.error('Error al crear usuario:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno al crear el usuario.',
+      error: error.message
+    });
+  }
+};
