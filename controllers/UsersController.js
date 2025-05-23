@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const Plan = require('../models/Plan');
+const Activity = require('../models/Activity');
+const Attendance = require('../models/Attendance');
 
 //Controlador para obtener el plan de un usuario
 exports.getUserPlan = async (req, res) => {
@@ -283,3 +285,60 @@ exports.assignPlanToUser = async (req, res) => {
 
 // Asegurarse de que assigPlanToUser siga funcionando temporalmente para compatibilidad
 exports.assigPlanToUser = exports.assignPlanToUser;
+
+// Obtener actividades a las que ha asistido un usuario
+exports.getUserActivities = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    
+    // Validar que el id sea válido
+    if (!userId) {
+      return res.status(400).json({ message: 'ID de usuario requerido' });
+    }
+    
+    // Verificar que el usuario existe
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    
+    // Buscar registros de asistencia donde el usuario haya asistido
+    const asistencias = await Attendance.find({ 
+      user_id: userId,
+      asistio: true
+    }).sort({ fecha: -1 }); // Ordenar por fecha descendente (más reciente primero)
+    
+    // Si queremos incluir información detallada de las actividades
+    // usamos populate para obtener datos de las actividades
+    const asistenciasConDetalles = await Attendance.find({ 
+      user_id: userId,
+      asistio: true
+    })
+    .populate('activity_id')
+    .sort({ fecha: -1 });
+    
+    // Formatear la respuesta
+    const actividades = asistenciasConDetalles.map(asistencia => {
+      return {
+        id: asistencia._id,
+        fecha_asistencia: asistencia.fecha,
+        actividad: asistencia.activity_id
+      };
+    });
+    
+    // Responder con las actividades encontradas
+    res.status(200).json({
+      success: true,
+      count: actividades.length,
+      data: actividades
+    });
+    
+  } catch (error) {
+    console.error('Error al obtener actividades del usuario:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener las actividades del usuario',
+      error: error.message
+    });
+  }
+};

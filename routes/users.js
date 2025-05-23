@@ -15,6 +15,8 @@ router.get('/get-user-by-id/:id', usersController.getUserById);
 router.post('/create-user', usersController.createUser);
 // Ruta para asignar o cambiar el plan de un usuario
 router.put('/:id/assign-plan/:planId', usersController.assignPlanToUser);
+// Ruta para obtener actividades a las que ha asistido un usuario
+router.get('/:id/activities', usersController.getUserActivities);
 
 
 module.exports = router;
