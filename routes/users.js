@@ -13,6 +13,8 @@ router.get('/get-all-users', usersController.getAllUsers);
 router.get('/get-user-by-id/:id', usersController.getUserById);
 // Crear nuevo usuario
 router.post('/create-user', usersController.createUser);
+// Ruta para asignar o cambiar el plan de un usuario
+router.put('/:id/assign-plan/:planId', usersController.assignPlanToUser);
 
 
 module.exports = router;
