@@ -108,11 +108,11 @@ Base path: `/users`
 Base path: `/users`
 
 ### Endpoints
-- `GET /users` → Obtener todos los usuarios
-- `GET /users/{id}` → Obtener usuario por ID
-- `POST /users` → Crear nuevo usuario
-- `PUT /users/{id}` → Actualizar usuario existente
-- `DELETE /users/{id}` → Eliminar usuario
-- `GET /users/{id}/plan` → Obtener el plan asignado al usuario
-- `PUT /users/{id}/assign-plan/{planId}` → Asignar o cambiar plan al usuario
-- `GET /users/{id}/activities` → Obtener actividades a las que ha asistido
+- `GET /api/v1/users/get-all-users` → Obtener todos los usuarios
+- `GET /api/v1/users/get-user-by-id/{id}` → Obtener usuario por ID
+- `POST /api/v1/users/create-user` → Crear nuevo usuario
+- `PUT /api/v1/users/update/{id}` → Actualizar usuario existente
+- `DELETE /api/v1/users/delete/{id}` → Eliminar usuario
+- `GET /api/v1/users/{id}/plan` → Obtener el plan asignado al usuario
+- `PUT /api/v1/users/{id}/assign-plan/{planId}` → Asignar o cambiar plan al usuario
+- `GET /api/v1/users/{id}/activities` → Obtener actividades a las que ha asistido
